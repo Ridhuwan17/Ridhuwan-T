@@ -4,6 +4,45 @@ const port = process.env.PORT || 3000;
 
 app.use(express.json())
 
+//new user registration
+app.post('/user register', async (req, res) => {
+  //console.log(req.body);
+  //insertOne
+  let result = await client.db ('maybank2u').collection('user').insertOne(
+    {
+      username: req.body.username,
+      password: req.body.password,
+      name: req.body.name,
+      email: req.body.email,
+    }
+  )
+  
+  resu.send(result);
+})
+
+//get user profile
+app.get('/user read profile', async (req, res) => {
+  //findOne 
+  let result = await client.db ('maybank2u').collection('user').findOne({
+    username: req.params.namadia,
+    password: req.params.emaildia,
+  });
+  res.send(result);
+})
+
+//update user account
+app.patch('/user update profile', (req, res) => {
+  updateOne
+  console.log('User profile updated')
+})
+
+//delete user account
+app.delete('/user delete profile', (req, res) => {
+  //deleteOne
+  console.log('User profile deleted')
+})
+
+
 app.get('/', (req, res) => {
    res.send('Hello LOVEEEEEEE!')
 })
@@ -28,10 +67,10 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    //await client.connect();
+    await client.connect();
     // Send a ping to confirm a successful connection
-    //await client.db("admin").command({ ping: 1 });
-    //console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    await client.db("admin").command({ ping: 1 });
+    console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
     // insert a document into the database
     //let result = await client.db ('maybank2u').collection('students').insertOne({
@@ -41,14 +80,14 @@ async function run() {
       //faculty: 'FTKEK'
     //});
 
-      let result = await client.db ('maybank2u').collection('students').findOne(
-        {
-          name: 'Ahmad'
-        }
+      //let result = await client.db ('maybank2u').collection('students').findOne(
+        //{
+         // name: 'Ahmad'
+        //}
         //{ _id: new ObjectId("660511dd96a7f358b46eca40") },
         //{ $set: { name: 'Ahmad' } }
-      ).toArray()        
-    console.log(result)
+      //).toArray()        
+    //console.log(result)
 
 
     //console.log("You successfully connected to MongoDB!GOOD JOB BRO!" + result.insertedId)
@@ -56,11 +95,9 @@ async function run() {
     //let result = await client.db ('maybank2u').collection('students').find().toArray();
     //console.log(result);
 
-  } finally {
+  } finally {}
     // Ensures that the client will close when you finish/error
     //await client.close();
-  }
-}
-run().catch(console.dir);
-
-
+  //}
+//}
+run().catch(console.dir); }
