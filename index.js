@@ -1,17 +1,21 @@
 const express = require('express')
 const app = express()
 const port = process.env.PORT || 3000;
+const bcrypt = require('bcrypt');
 
 app.use(express.json())
 
 //new user registration
-app.post('/user register', async (req, res) => {
+app.post('/user', async (req, res) => {
   //console.log(req.body);
   //insertOne
+
+  const hash = bcrypt.hashSync(req.body.password, 10);
+
   let result = await client.db ('maybank2u').collection('user').insertOne(
     {
       username: req.body.username,
-      password: req.body.password,
+      password: hash,
       name: req.body.name,
       email: req.body.email,
     }
@@ -19,6 +23,28 @@ app.post('/user register', async (req, res) => {
   
   resu.send(result);
 })
+
+app.post('/login', async (req, res) => {
+  //username: req.body.username,
+  //password: req.body.password,
+
+  //Step 1. Check if the username exist in the database
+  let result = await client.db ('maybank2u').collection('user').findOne(
+    {
+    username: req.body.username,
+  }
+)
+
+if (!result) res.send('Invalid username');
+else {
+  //step 2: Check if the password is correct
+  if (bcrypt.compareSync(req.body.password, result.password)) {
+    res.send('Login successful');
+  } else {
+    res.send('Invalid password');
+  }
+}
+}) // Add closing parenthesis here
 
 //get user profile
 app.get('/user read profile', async (req, res) => {
