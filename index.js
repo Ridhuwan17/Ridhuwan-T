@@ -70,7 +70,7 @@ app.delete('/user delete profile', (req, res) => {
 
 
 app.get('/', (req, res) => {
-   res.send('Hello LOVEEEEEEE!')
+   res.send('Hello World!')
 })
 
 app.listen(port, () => {
