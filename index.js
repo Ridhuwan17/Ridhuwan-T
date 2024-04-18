@@ -21,15 +21,15 @@ app.post('/user', async (req, res) => {
     }
   )
   
-  resu.send(result);
+  res.send(result);
 })
 
-app.post('/login', async (req, res) => {
+app.post('/user', async (req, res) => {
   //username: req.body.username,
   //password: req.body.password,
 
   //Step 1. Check if the username exist in the database
-  let result = await client.db ('maybank2u').collection('user').findOne(
+  let result = await client.db ('maybank2u').collection('students').findOne(
     {
     username: req.body.username,
   }
@@ -47,30 +47,55 @@ else {
 }) // Add closing parenthesis here
 
 //get user profile
-app.get('/user read profile', async (req, res) => {
+app.get('/user/:id', async (req, res) => {
+  console.log(req.params)
+
+  let result = await client.db ('maybank2u').collection('students').findOne(
+    {
+      _id: new ObjectId (req.params.id),
+    })
   //findOne 
-  let result = await client.db ('maybank2u').collection('user').findOne({
-    username: req.params.namadia,
-    password: req.params.emaildia,
-  });
+ // let result = await client.db ('maybank2u').collection('user').findOne({
+   // username: req.params.namadia,
+   // password: req.params.emaildia,
+ // });
   res.send(result);
+
 })
 
 //update user account
-app.patch('/user update profile', (req, res) => {
-  updateOne
-  console.log('User profile updated')
+app.patch('/user/:id', async (req, res) => {
+  //updateOne
+  //console.log('User profile updated')
+  let result = await client.db ('maybank2u').collection('students').updateOne(
+    {
+      _id: new ObjectId (req.params.id),
+    },
+    {
+      $set: {
+        name: req.body.name,
+      }
+    }
+  );
+  res.send(result);
 })
 
 //delete user account
-app.delete('/user delete profile', (req, res) => {
+app.delete('/user/:id', async (req, res) => {
   //deleteOne
-  console.log('User profile deleted')
+  //console.log('User profile deleted')
+  let result = await client.db ('maybank2u').collection('students').deleteOne(
+    {
+      _id: new ObjectId (req.params.id),
+    }
+  )
+  res.send(result)
+
 })
 
 
 app.get('/', (req, res) => {
-   res.send('Hello World!')
+   res.send('Syakir paling hensem!')
 })
 
 app.listen(port, () => {
@@ -121,9 +146,9 @@ async function run() {
     //let result = await client.db ('maybank2u').collection('students').find().toArray();
     //console.log(result);
 
-  } finally {}
+  } finally {
     // Ensures that the client will close when you finish/error
     //await client.close();
-  //}
-//}
-run().catch(console.dir); }
+  }
+}
+run().catch(console.dir); 
