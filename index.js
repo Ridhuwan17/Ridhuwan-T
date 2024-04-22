@@ -95,7 +95,7 @@ app.delete('/user/:id', async (req, res) => {
 
 
 app.get('/', (req, res) => {
-   res.send('Syakir paling hensem!')
+   res.send('RIDH WAS HERE!')
 })
 
 app.listen(port, () => {
