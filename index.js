@@ -2,6 +2,7 @@ const express = require('express')
 const app = express()
 const port = process.env.PORT || 3000;
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 app.use(express.json())
 
@@ -12,7 +13,7 @@ app.post('/user', async (req, res) => {
 
   const hash = bcrypt.hashSync(req.body.password, 10);
 
-  let result = await client.db ('maybank2u').collection('user').insertOne(
+  let result = await client.db('maybank2u').collection('user').insertOne(
     {
       username: req.body.username,
       password: hash,
@@ -24,24 +25,36 @@ app.post('/user', async (req, res) => {
   res.send(result);
 })
 
-app.post('/user', async (req, res) => {
+app.post('/login', async (req, res) => {
   //username: req.body.username,
   //password: req.body.password,
 
   //Step 1. Check if the username exist in the database
-  let result = await client.db ('maybank2u').collection('students').findOne(
+  let result = await client.db('maybank2u').collection('user').findOne(
     {
-    username: req.body.username,
+    username: req.body.username
   }
-)
+);
+console.log(result);
 
-if (!result) res.send('Invalid username');
-else {
+if (!result){
+  res.send('Invalid username');
+}  else {
   //step 2: Check if the password is correct
   if (bcrypt.compareSync(req.body.password, result.password)) {
-    res.send('Login successful');
+    //password is correct
+    var token = jwt.sign({
+      
+      _id: result._id,
+      username: result.username,
+      password: result.password
+
+
+    }, 'mysupersecretkey', {expiresIn: 10*60 });
+    res.send(token);
   } else {
-    res.send('Invalid password');
+    //password is incorrect
+    res.status(401).send ('Invalid password');
   }
 }
 }) // Add closing parenthesis here
@@ -91,6 +104,18 @@ app.delete('/user/:id', async (req, res) => {
   )
   res.send(result)
 
+})
+
+app.delete('/user', async (req, res) => {
+})
+
+app.post('/buy', async (req, res) => {
+  const token = req.headers.authorization.split(" ")[1];
+  console.log(`token: ${token}`);
+
+  var decoded = jwt.verify(token, 'mysupersecretkey');
+  console.log(decoded);
+  res.send(decoded);
 })
 
 
