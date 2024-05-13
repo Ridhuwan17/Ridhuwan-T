@@ -60,21 +60,25 @@ if (!result){
 }) // Add closing parenthesis here
 
 //get user profile
+
 app.get('/user/:id', async (req, res) => {
-  console.log(req.params)
-
-  let result = await client.db ('maybank2u').collection('students').findOne(
-    {
-      _id: new ObjectId (req.params.id),
-    })
-  //findOne 
- // let result = await client.db ('maybank2u').collection('user').findOne({
-   // username: req.params.namadia,
-   // password: req.params.emaildia,
- // });
-  res.send(result);
-
-})
+  
+  if (decoded) 
+  if (decoded._id != req.params.id) {
+    let result = await client.db ('maybank2u').collection('students').findOne(
+      {
+        _id: new ObjectId (req.params.id),
+      })
+    //findOne 
+    // let result = await client.db ('maybank2u').collection('user').findOne({
+    // username: req.params.namadia,
+    // password: req.params.emaildia,
+    // });
+    res.send(result);
+  }else {
+    res.status(401).send('Unauthorized')
+  }
+}); // Add closing parenthesis here
 
 //update user account
 app.patch('/user/:id', async (req, res) => {
@@ -139,6 +143,23 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
+
+function verifyToken(req,res,next) {
+  const authHeader = req.headers.authorization;
+  const token = authHeader.split(' ')[1];
+
+  if (token == null) return res.sendStatus(401);
+
+  jwt.verify(token, 'mysupersecretkey', (err, decoded) => {
+    console.log(err)
+
+    if (err) return res.sendStatus(403);
+
+    req.decoded = decoded;
+
+    next();
+  });
+}
 
 async function run() {
   try {
