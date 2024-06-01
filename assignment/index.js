@@ -4,7 +4,6 @@ const jwt = require('jsonwebtoken');
 const app = express();
 const port = process.env.PORT || 3000;
 
-
 app.use(express.json());
 app.use(express.static("public"));
 
@@ -126,62 +125,53 @@ app.patch("/login", async (req, res) => {
 });
 
 //for authorisation (still in progress)
-app.post('/login', function(req, res) {
-  const username = req.body.username;
-  const password = req.body.password;
+const SECRET_KEY = "mysupersecretkey "; 
 
-  // Authenticate user
-  // This is a simplified example, replace with your actual logic
-  User.findOne({ username: username }, function(err, user) {
-    if (err) {
-      return res.status(500).send('Error on the server.');
-    }
-    if (!user) {
-      return res.status(404).send('No user found.');
-    }
-    
-    // Check if the provided password matches the one in the database
-    // Replace this with your actual password comparison logic
-    if (password !== user.password) {
-      return res.status(401).send({ auth: false, token: null });
-    }
+app.post("/login", async (req, res) => {
+  const { username, password } = req.body;
 
-    // If user is authenticated, sign the JWT token
-    const token = jwt.sign({ id: user._id }, 'passwordorangsusahnakhack', { expiresIn: '1h' });
+  if (!username || !password) {
+    return res.status(400).send("Username and password are required");
+  }
 
-    // Send the token in the response
-    res.send({ auth: true, token: token });
-  });
+  const user = await client.db("Assignment").collection("players").findOne({ name: username });
+
+  if (!user) {
+    return res.status(401).send("Invalid username or password");
+  }
+
+  const passwordMatch = await bcrypt.compare(password, user.password);
+
+  if (!passwordMatch) {
+    return res.status(401).send("Invalid username or password");
+  }
+
+  const token = jwt.sign({ id: user._id }, SECRET_KEY);
+
+  res.status(200).send({ token });
 });
 
 function authenticateToken(req, res, next) {
-  // Get auth header value
   const authHeader = req.headers['authorization'];
-  // Check if auth header is undefined
-  if (typeof authHeader !== 'undefined') {
-    // Split at the space and get token from array
-    const token = authHeader.split(' ')[1];
-    // Verify token
-    jwt.verify(token, 'passwordorangsusahnakhack', (err, data) => {
-      if (err) {
-        // If error send Forbidden (403)
-        return res.sendStatus(403);
-      }
-      // If token is successfully verified, we can send the authorized data 
-      req.user = data;
-      // Next middleware
-      next();
-    });
-  } else {
-    // If header is undefined return Forbidden (403)
-    res.sendStatus(403);
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).send("Token is required");
   }
+
+  jwt.verify(token, SECRET_KEY, (err, user) => {
+    if (err) {
+      return res.status(403).send("Invalid token");
+    }
+
+    req.user = user;
+    next();
+  });
 }
 
-// Then use this middleware in your routes where you want to require authentication
-app.get('/some_private_route', authenticateToken, (req, res) => {
-  // The route handler can access req.user to get the decoded token
-  // Do something with req.user
+// Using the 'authenticateToken' middleware in protected routes
+app.get("/protected", authenticateToken, (req, res) => {
+  // Your protected route logic here
 });
 
 app.patch("/login/starterpack", async (req, res) => {
