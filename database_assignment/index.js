@@ -54,6 +54,7 @@ app.post("/register", async (req, res) => {
           character_selected: { name: "Lillia", charId: countNum },
           charId: [countNum],
         },
+        roles:"player",
         money: 0,
         points: 0,
         achievments: ["A beginner player"],
@@ -146,62 +147,51 @@ app.post("/login", async (req, res) => {
     return res.status(401).send("Invalid username or password");
   }
 
-  const token = jwt.sign({ id: user._id }, SECRET_KEY);
-
+  const token = jwt.sign({ id: user._id,name: user.name,player_id: user.player_id ,email: user.email,roles:user.roles}, SECRET_KEY,{expiresIn:'1h'});
+  console.log (token);
+  console.log(req.identify)
   res.status(200).send({ token });
 });
 
-function authenticateToken(req, res, next) {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-
-  if (!token) {
-    return res.status(401).send("Token is required");
-  }
-
-  jwt.verify(token, SECRET_KEY, (err, user) => {
-    if (err) {
-      return res.status(403).send("Invalid token");
-    }
-
-    req.user = user;
-    next();
-  });
-}
 
 // Using the 'authenticateToken' middleware in protected routes
-app.get("/protected", authenticateToken, (req, res) => {
+app.get("/protected",(req, res) => {
   // Your protected route logic here
 });
 
-app.patch("/login/starterpack", async (req, res) => {
-  if (!req.body.name) {
-    return res.status(400).send("name is required.☜(`o´)");
-  }
-  const min = 1000;
-  const max = 2000;
-  const newMoneyAmount = Math.floor(Math.random() * (max - min + 1)) + min;
-  let user = await client
-    .db("Assignment")
-    .collection("players")
-    .findOneAndUpdate(
-      {
-        $and: [
-          {
-            name: req.body.name,
-          },
-          { starterPackTaken: { $eq: false } },
-        ],
-      },
-      { $set: { starterPackTaken: true, money: newMoneyAmount } },
-      { returnOriginal: false }
-    );
-  if (user === null) {
-    res.status(400).send("Starter pack already taken (╯°□°）╯");
-  } else {
-    res.send(
-      `Total amount of RM ${newMoneyAmount} is given to player ${req.body.name}🤑🤑🤑 `
-    );
+app.patch("/login/starterpack",verifyToken, async (req, res) => {
+  if (req.identify.roles != "player" && req.identify.name != req.body.name) {
+    return res.status(401).send("You are not authorised to take the starter pack");
+  }else{
+
+    if (!req.body.name) {
+      return res.status(400).send("name is required.☜(`o´)");
+    }
+    const min = 1000;
+    const max = 2000;
+    const newMoneyAmount = Math.floor(Math.random() * (max - min + 1)) + min;
+    let user = await client
+      .db("Assignment")
+      .collection("players")
+      .findOneAndUpdate(
+        {
+          $and: [
+            {
+              name: req.body.name,
+            },
+            { starterPackTaken: { $eq: false } },
+          ],
+        },
+        { $set: { starterPackTaken: true, money: newMoneyAmount } },
+        { returnOriginal: false }
+      );
+    if (user === null) {
+      res.status(400).send("Starter pack already taken (╯°□°）╯");
+    } else {
+      res.send(
+        `Total amount of RM ${newMoneyAmount} is given to player ${req.body.name}🤑🤑🤑 `
+      );
+    }
   }
 });
 
@@ -275,8 +265,11 @@ app.post("/character", async (req, res) => {
 });
 
 //everyone can read each other
-app.get("/read/:player_id", async (req, res) => {
-  let document = await client
+app.get("/read/:player_id", verifyToken,async (req, res) => {
+  if(req.identify.roles != "player" && req.identify.player_id != req.params.player_id){
+    return res.status(401).send("You are not authorised to read this player");
+  }else{
+    let document = await client
     .db("Assignment")
     .collection("players")
     .aggregate([
@@ -342,6 +335,7 @@ app.get("/read/:player_id", async (req, res) => {
     ])
     .toArray();
   res.send(document);
+  }
 });
 
 //need Developer token
@@ -1173,6 +1167,22 @@ const client = new MongoClient(uri, {
   },
 });
 
+function verifyToken(req, res, next) {
+  const authHeader = req.headers.authorization
+  const token = authHeader && authHeader.split(' ')[1]
+
+  if (token == null) return res.sendStatus(401)
+
+  jwt.verify(token, SECRET_KEY, (err, decoded) => {
+    console.log(err)
+
+    if (err) return res.sendStatus(403)
+
+    req.identify = decoded
+
+    next()
+  })
+}
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)

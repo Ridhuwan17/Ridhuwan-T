@@ -1,4 +1,5 @@
 import postLogin_module
+import os
 
 def welcome():
     print("""
@@ -22,6 +23,10 @@ def userSignUp(dictOfUser):
     email = input("Enter your email: ")
 
     userDetails = {'username': username, 'password': password, 'age': age, 'email': email}
+
+    if not os.path.exists("userList.txt"):
+        with open("userList.txt", "w") as userList:
+            pass
 
     with open("userList.txt", "r") as userList:
         for lines in userList:
@@ -48,6 +53,7 @@ def userLogin():
     if username == '0':
         print("Going back to the main menu...")
         return
+    
 
     with open('userList.txt','r') as userList:
         readingLines = userList.readlines()
@@ -58,8 +64,8 @@ def userLogin():
         else:
             for line in readingLines:
                 if username in line and password in line:
-                    postLogin_module.userOption() #removed postLogin_module.user_choice(choice=1)
-                    return  # Exit the function after successful login
+                    return postLogin_module.userOption(username) #removed postLogin_module.user_choice(choice=1)
+                
             # If we reach this point, no matching username and password were found
             print("Invalid username or password or user does not exist. Please try again.\n")
             return userLogin()

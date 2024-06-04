@@ -1,5 +1,7 @@
-def calculate_price():
-    total_price = 0.0  # Initialize total price
+import promo
+
+def calculate_price(total_price):
+    # total_price = 0.0  # Initialize total price
     order_details = []
 
     # Get user's order
@@ -79,6 +81,10 @@ def calculate_price():
 
     # Print the total price
     print(f"Your total price is: RM{total_price:.2f}")  # Format price with 2 decimal places
+
+    promoCodeList = promo.promo
+
+    total_price = promo.applyPromo(total_price)
 
     return {
         'order_details': order_details,
