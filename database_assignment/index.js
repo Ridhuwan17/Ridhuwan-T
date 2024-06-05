@@ -7,7 +7,7 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.static("public"));
 
-//e.g using for registration
+//e.g using for registration for users
 app.post("/register", async (req, res) => {
   if (
     !req.body.name ||
@@ -93,6 +93,7 @@ app.post("/register", async (req, res) => {
   }
 });
 
+//login for users
 app.patch("/login", async (req, res) => {
   if (!req.body.name || !req.body.email) {
     return res.status(400).send("name and email are required. ( ˘ ³˘)❤");
@@ -159,6 +160,7 @@ app.get("/protected",(req, res) => {
   // Your protected route logic here
 });
 
+//login to get startpack 
 app.patch("/login/starterpack",verifyToken, async (req, res) => {
   if (req.identify.roles != "player" && req.identify.name != req.body.name) {
     return res.status(401).send("You are not authorised to take the starter pack");
@@ -195,7 +197,7 @@ app.patch("/login/starterpack",verifyToken, async (req, res) => {
   }
 });
 
-//in funtion of adding chest
+//in funtion of adding chest(developer token needed)
 app.post("/chests", async (req, res) => {
   if (
     !req.body.chest ||
@@ -227,7 +229,7 @@ app.post("/chests", async (req, res) => {
     res.send(chest);
   }
 });
-//in function of adding character
+//in function of adding character(developer token needed)
 app.post("/character", async (req, res) => {
   if (
     !req.body.character_name ||
@@ -264,7 +266,7 @@ app.post("/character", async (req, res) => {
   }
 });
 
-//everyone can read each other
+//everyone can read each other(users and developers)
 app.get("/read/:player_id", verifyToken,async (req, res) => {
   if(req.identify.roles != "player" && req.identify.player_id != req.params.player_id){
     return res.status(401).send("You are not authorised to read this player");
@@ -406,7 +408,7 @@ app.patch("/characterupdate/:charactername", async (req, res) => {
   }
 });
 
-// To send a friend request
+// To send a friend request(USERS ONLY)
 app.post("/send_friend_request", async (req, res) => {
   if (!req.body.requesterId || !req.body.requestedId) {
     return res
@@ -474,7 +476,7 @@ app.post("/send_friend_request", async (req, res) => {
   }
 });
 
-// To  accept a friend request
+// To  accept a friend request(users)
 app.patch("/accept_friend_request", async (req, res) => {
   if (!req.body.accepterId || !req.body.requesterId) {
     return res
@@ -546,7 +548,7 @@ app.patch("/accept_friend_request", async (req, res) => {
     }
   }
 });
-
+//(users)
 app.patch("/remove_friend/:requesterId/:friendId", async (req, res) => {
   // Check if requesterId and friendId are different
   if (parseInt(req.params.requesterId) === parseInt(req.params.friendId)) {
@@ -589,7 +591,8 @@ app.patch("/remove_friend/:requesterId/:friendId", async (req, res) => {
   }
 });
 
-app.patch("/update/:object_id", async (req, res) => {
+//users
+app.patch("/update/:name", verifyToken, async (req, res) => {
   if (
     !req.body.name ||
     !req.body.email ||
@@ -605,11 +608,11 @@ app.patch("/update/:object_id", async (req, res) => {
     .collection("players")
     .updateOne(
       {
-        _id: new ObjectId(req.params.object_id),
+        name: req.params.name
       },
       {
         $set: {
-          name: req.body.username,
+          name: req.body.name,
           email: req.body.email,
           gender: req.body.gender, //password??
           password: hash,
@@ -623,18 +626,20 @@ app.patch("/update/:object_id", async (req, res) => {
   }
 });
 
-app.delete("/delete/:object_id", async (req, res) => {
+//for users to delete their account
+app.delete("/delete/:name",verifyToken ,async (req, res) => {
   let delete_req = await client
     .db("Assignment")
     .collection("users")
     .deleteOne({
-      _id: new ObjectId(req.params.object_id),
+      name: req.params.name,
     });
   res.send(delete_req);
   console.log(req.params);
 });
 
-app.get("/chests", async (req, res) => {
+//for users
+app.get("/readchests", async (req, res) => {
   const chests = await client
     .db("Assignment")
     .collection("chests")
@@ -643,6 +648,7 @@ app.get("/chests", async (req, res) => {
   res.send(chests);
 });
 
+//users
 app.patch("/buying_chest", async (req, res) => {
   if (!req.body.name || !req.body.email || !req.body.chest) {
     return res
@@ -815,7 +821,7 @@ app.patch("/buying_chest", async (req, res) => {
   }
 });
 
-//put point
+//put point //users
 app.get("/leaderboard", async (req, res) => {
   let leaderboard = await client
     .db("Assignment")
@@ -851,7 +857,7 @@ app.get("/leaderboard", async (req, res) => {
   }
   res.send(leaderboard);
 });
-
+//users
 app.patch("/change_selected_char", async (req, res) => {
   if (!req.body.name || !req.body.email || !req.body.character_selected) {
     return res
@@ -908,7 +914,7 @@ app.patch("/change_selected_char", async (req, res) => {
     );
   }
 });
-
+//users
 app.patch("/battle", async (req, res) => {
   if (!req.body.name || !req.body.email) {
     return res.status(400).send("name and email are required. ( ˘ ³˘)❤");
@@ -1109,7 +1115,7 @@ app.patch("/battle", async (req, res) => {
     }
   }
 });
-
+//users
 app.get("/achievements", async (req, res) => {
   if (!req.body.player_id) {
     return res.status(400).send("player_id is required. （゜ρ゜)/");
@@ -1126,7 +1132,7 @@ app.get("/achievements", async (req, res) => {
   }
   res.send(user.achievements);
 });
-
+//users
 app.get("/read_battle_record/:player_id", async (req, res) => {
   let history = await client
     .db("Assignment")
