@@ -1,3 +1,4 @@
+require('dotenv').config();
 const bcrypt = require("bcrypt");
 const express = require("express");
 const jwt = require('jsonwebtoken');
@@ -93,8 +94,8 @@ app.post("/register", async (req, res) => {
   }
 });
 
-//login for users
-app.patch("/login", async (req, res) => {
+//login for users (need to change)
+app.post("/login", async (req, res) => {
   if (!req.body.name || !req.body.email) {
     return res.status(400).send("name and email are required. ( ˘ ³˘)❤");
   }
@@ -102,11 +103,7 @@ app.patch("/login", async (req, res) => {
     .db("Assignment")
     .collection("players")
     .findOne({
-      name:
-        req.body.name &&
-        (await client.db("Assignment").collection("players").findOne({
-          email: req.body.email,
-        })),
+      $and:[{name:req.body.name},{email:req.body.email}]
     });
   if (!resp) {
     res.send("User not found ⸨◺_◿⸩");
@@ -114,9 +111,14 @@ app.patch("/login", async (req, res) => {
     // Check if password is provided
     if (resp.password) {
       if (bcrypt.compareSync(req.body.password, resp.password)) {
-        res.send(
-          "Login successful. Remember to gain your starter pack!\n(っ＾▿＾)۶🍸🌟🍺٩(˘◡˘ )"
-        );
+        const token = jwt.sign({ id: resp._id,name: resp.name,player_id: resp.player_id ,email: resp.email,roles:resp.roles},process.env.JWT_SECRET,{expiresIn:'1h'});
+        console.log (token);
+
+        res.status(200).send({
+          message: "Login successful. Remember to gain your starter pack!\n(っ＾▿＾)۶🍸🌟🍺٩(˘◡˘ )",
+          token: token
+        });
+
       } else {
         res.send("Wrong Password ⸨◺_◿⸩");
       }
@@ -124,40 +126,6 @@ app.patch("/login", async (req, res) => {
       res.send("Password not provided ⸨◺_◿⸩");
     }
   }
-});
-
-//for authorisation (still in progress)
-const SECRET_KEY = "mysupersecretkey "; 
-
-app.post("/login", async (req, res) => {
-  const { username, password } = req.body;
-
-  if (!username || !password) {
-    return res.status(400).send("Username and password are required");
-  }
-
-  const user = await client.db("Assignment").collection("players").findOne({ name: username });
-
-  if (!user) {
-    return res.status(401).send("Invalid username or password");
-  }
-
-  const passwordMatch = await bcrypt.compare(password, user.password);
-
-  if (!passwordMatch) {
-    return res.status(401).send("Invalid username or password");
-  }
-
-  const token = jwt.sign({ id: user._id,name: user.name,player_id: user.player_id ,email: user.email,roles:user.roles}, SECRET_KEY,{expiresIn:'1h'});
-  console.log (token);
-  console.log(req.identify)
-  res.status(200).send({ token });
-});
-
-
-// Using the 'authenticateToken' middleware in protected routes
-app.get("/protected",(req, res) => {
-  // Your protected route logic here
 });
 
 //login to get startpack 
@@ -198,77 +166,85 @@ app.patch("/login/starterpack",verifyToken, async (req, res) => {
 });
 
 //in funtion of adding chest(developer token needed)
-app.post("/chests", async (req, res) => {
-  if (
-    !req.body.chest ||
-    !req.body.price ||
-    !req.body.characters ||
-    !req.body.Max_power_level
-  ) {
-    return res
-      .status(400)
-      .send(
-        "chest,price,characters and Max_power_level are required.\n -`д´- "
-      );
-  }
-  let existing = await client.db("Assignment").collection("chests").findOne({
-    chest: req.body.chest,
-  });
-  if (existing) {
-    res.status(400).send("Chest already exist ಠ_ಠ");
-  } else {
-    if (req.body.characters.includes(req.body.character)) {
-      return res.status(400).send("Character already in characters array ಠ_ಠ");
+app.post("/chests",verifyToken,async (req, res) => {
+  if (req.identify.roles != "admin") {
+    return res.status(401).send("You are not authorised to create a chest");
+  }else{
+    if (
+      !req.body.chest ||
+      !req.body.price ||
+      !req.body.characters ||
+      !req.body.Max_power_level
+    ) {
+      return res
+        .status(400)
+        .send(
+          "chest,price,characters and Max_power_level are required.\n -`д´- "
+        );
     }
-    let chest = await client.db("Assignment").collection("chests").insertOne({
+    let existing = await client.db("Assignment").collection("chests").findOne({
       chest: req.body.chest,
-      price: req.body.price,
-      characters: req.body.characters,
-      Max_power_level: req.body.Max_power_level,
     });
-    res.send(chest);
+    if (existing) {
+      res.status(400).send("Chest already exist ಠ_ಠ");
+    } else {
+      if (req.body.characters.includes(req.body.character)) {
+        return res.status(400).send("Character already in characters array ಠ_ಠ");
+      }
+      let chest = await client.db("Assignment").collection("chests").insertOne({
+        chest: req.body.chest,
+        price: req.body.price,
+        characters: req.body.characters,
+        Max_power_level: req.body.Max_power_level,
+      });
+      res.send(chest);
+    }
   }
 });
 //in function of adding character(developer token needed)
-app.post("/character", async (req, res) => {
-  if (
-    !req.body.character_name ||
-    !req.body.health ||
-    !req.body.attack ||
-    !req.body.type ||
-    !req.body.speed
-  ) {
-    return res
-      .status(400)
-      .send(
-        "character_name,health,attack,type and speed are required.\n ໒( ⇀ ‸ ↼ )७)"
-      );
-  }
-  let existing = await client
-    .db("Assignment")
-    .collection("characters")
-    .findOne({
-      name: req.body.character_name,
-    });
-  if (existing) {
-    res.status(400).send("Character already exist (╬≖_≖)");
-  } else {
-    let character = await client
+app.post("/character",verifyToken, async (req, res) => {
+  if(req.identify.roles != "admin"){
+    return res.status(401).send("You are not authorised to create a character");
+  }else{
+    if (
+      !req.body.character_name ||
+      !req.body.health ||
+      !req.body.attack ||
+      !req.body.type ||
+      !req.body.speed
+    ) {
+      return res
+        .status(400)
+        .send(
+          "character_name,health,attack,type and speed are required.\n ໒( ⇀ ‸ ↼ )७)"
+        );
+    }
+    let existing = await client
       .db("Assignment")
       .collection("characters")
-      .insertOne({
+      .findOne({
         name: req.body.character_name,
-        health: req.body.health,
-        attack: req.body.attack,
-        type: req.body.type,
       });
-    res.send(character);
+    if (existing) {
+      res.status(400).send("Character already exist (╬≖_≖)");
+    } else {
+      let character = await client
+        .db("Assignment")
+        .collection("characters")
+        .insertOne({
+          name: req.body.character_name,
+          health: req.body.health,
+          attack: req.body.attack,
+          type: req.body.type,
+        });
+      res.send(character);
+    }
   }
 });
 
 //everyone can read each other(users and developers)
 app.get("/read/:player_id", verifyToken,async (req, res) => {
-  if(req.identify.roles != "player" && req.identify.player_id != req.params.player_id){
+  if((req.identify.roles != "player" && req.identify.player_id != req.params.player_id)||req.identify.roles != "admin"){
     return res.status(401).send("You are not authorised to read this player");
   }else{
     let document = await client
@@ -341,35 +317,42 @@ app.get("/read/:player_id", verifyToken,async (req, res) => {
 });
 
 //need Developer token
-app.patch("/add_character_to_chest", async (req, res) => {
-  if (!req.body.chest || !req.body.character_name) {
-    return res
-      .status(400)
-      .send("chest and character_name are required. \n٩(๑ `н´๑)۶");
+app.patch("/add_character_to_chest",verifyToken,async (req, res) => {
+    if(req.identify.roles != "admin"){
+    return res.status(401).send("You are not authorised to add character to chest");
+  }else{
+    if (!req.body.chest || !req.body.character_name) {
+      return res
+        .status(400)
+        .send("chest and character_name are required. \n٩(๑ `н´๑)۶");
+    }
+    let result2 = await client
+      .db("Assignment")
+      .collection("chests")
+      .findOne({ chest: req.body.chest });
+    if (!result2) {
+      return res.status(404).send("Chest not found|･ω･｀)");
+    }
+    if (result2.characters.includes(req.body.character_name)) {
+      return res.status(400).send("Character already exist in the chest |･ω･)ﾉ");
+    }
+    const result = await client
+      .db("Assignment")
+      .collection("chests")
+      .updateOne(
+        { chest: req.body.chest },
+        { $addToSet: { characters: req.body.character_name } }
+      );
+    res.send("Character added successfully ૮ ºﻌºა");
   }
-  let result2 = await client
-    .db("Assignment")
-    .collection("chests")
-    .findOne({ chest: req.body.chest });
-  if (!result2) {
-    return res.status(404).send("Chest not found|･ω･｀)");
-  }
-  if (result2.characters.includes(req.body.character_name)) {
-    return res.status(400).send("Character already exist in the chest |･ω･)ﾉ");
-  }
-  const result = await client
-    .db("Assignment")
-    .collection("chests")
-    .updateOne(
-      { chest: req.body.chest },
-      { $addToSet: { characters: req.body.character_name } }
-    );
-  res.send("Character added successfully ૮ ºﻌºა");
 });
 
 //need Developer token
-app.patch("/characterupdate/:charactername", async (req, res) => {
-  if (
+app.patch("/characterupdate/:charactername",verifyToken,async (req, res) => {
+  if(req.identify.roles != "admin"){
+    res.status(403).send("You are not authorised to update this character");
+  }else{
+    if (
     !req.body.health ||
     !req.body.attack ||
     !req.body.speed ||
@@ -406,11 +389,13 @@ app.patch("/characterupdate/:charactername", async (req, res) => {
       );
     res.send(character);
   }
+  }
+  
 });
 
 // To send a friend request for users only
 app.post("/send_friend_request", verifyToken, async (req, res) => {
-  if(req.identify.roles != "player" && req.identify.playerId != req.body.playerId){
+  if(req.identify.roles != "player" && req.identify.playerId != req.body.requesterId){
     return res.status(401).send("You are not authorised to send this friend request");
   }else{
   if (!req.body.requesterId || !req.body.requestedId) {
@@ -481,7 +466,7 @@ app.post("/send_friend_request", verifyToken, async (req, res) => {
 
 // To  accept a friend request for users only
 app.patch("/accept_friend_request", verifyToken, async (req, res) => {
-  if(req.identify.roles != "player" && req.identify.playerId != req.params.playerId){
+  if(req.identify.roles != "player" && req.identify.playerId != req.body.accepterId){
     return res.status(401).send("You are not authorised to accept this friend request");
   }else{
 
@@ -555,9 +540,10 @@ app.patch("/accept_friend_request", verifyToken, async (req, res) => {
     }
   }
 }});
+
 //for users to remove friend
 app.patch("/remove_friend/:requesterId/:friendId", verifyToken, async (req, res) => {
-  if(req.identify.roles != "player" && req.identify.playerId != req.params.playerId){
+  if(req.identify.roles != "player" && req.identify.playerId != req.params.requesterId){
     return res.status(401).send("You are not authorised to remove this friend");
   }else{
   // Check if requesterId and friendId are different
@@ -642,6 +628,7 @@ app.patch("/update/:name", verifyToken, async (req, res) => {
     }
   }
 });
+
 //for users to delete their account
 app.delete("/delete/:name", verifyToken, async (req, res) => {
   if(req.identify.roles != "player" && req.identify.name != req.params.name){
@@ -859,7 +846,7 @@ app.patch("/buying_chest", verifyToken, async (req, res) => {
 
 //put point //users
 app.get("/leaderboard", verifyToken, async (req, res) => {
-    if (req.identify.roles != "player") {
+    if (req.identify.roles != "player" || req.identify.roles != "admin") {
       return res.status(401).send("You are not authorised to view the leaderboard");
     } else {
     
@@ -897,9 +884,10 @@ app.get("/leaderboard", verifyToken, async (req, res) => {
     }
     res.send(leaderboard);
   }
-  }); // Add closing parenthesis here
-  //users
-  app.patch("/change_selected_char", verifyToken, async (req, res) => {
+}); 
+  
+//users
+app.patch("/change_selected_char", verifyToken, async (req, res) => {
     if(req.identify.roles != "player" && req.identify.name != req.body.name){
       return res.status(401).send("You are not authorised to change the selected character");
     }
@@ -959,6 +947,7 @@ app.get("/leaderboard", verifyToken, async (req, res) => {
       );
     }
   }});
+
 //users
 app.patch("/battle", verifyToken, async (req, res) => {
   if(req.identify.roles != "player" && req.identify.name != req.body.name){
@@ -1236,7 +1225,7 @@ function verifyToken(req, res, next) {
 
   if (token == null) return res.sendStatus(401)
 
-  jwt.verify(token, SECRET_KEY, (err, decoded) => {
+  jwt.verify(token,process.env.JWT_SECRET, (err, decoded) => {
     console.log(err)
 
     if (err) return res.sendStatus(403)
