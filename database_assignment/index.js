@@ -543,7 +543,7 @@ app.patch("/accept_friend_request", verifyToken, async (req, res) => {
 
 //for users to remove friend
 app.patch("/remove_friend/:requesterId/:friendId", verifyToken, async (req, res) => {
-  if(req.identify.roles != "player" && req.identify.playerId != req.params.requesterId){
+  if(req.identify.roles!= "player"){
     return res.status(401).send("You are not authorised to remove this friend");
   }else{
   // Check if requesterId and friendId are different
