@@ -1,5 +1,6 @@
 import postLogin_module
 import os
+import admin_module  # Import the admin module
 
 def welcome():
     print("""
@@ -7,7 +8,6 @@ def welcome():
     1. Login
     2. Sign Up
     3. Exit
-    4. Admin Login
     """)
 
 def listOfUser_File(dictOfUser):
@@ -31,7 +31,6 @@ def userSignUp(dictOfUser):
     with open("userList.txt", "r") as userList:
         for lines in userList:
             lines = lines.strip()
-            # lines = lines[2:-3]
 
             if username in lines:
                 print("Username already exists. Please try again.")
@@ -43,7 +42,6 @@ def userSignUp(dictOfUser):
     print("\nGoing back to the Main Menu")
 
 def userLogin():
-
     print("LOGIN FORM")
     print("Enter '0' at the username and password to go back to the main menu.\n")
 
@@ -53,9 +51,15 @@ def userLogin():
     if username == '0':
         print("Going back to the main menu...")
         return
-    
 
-    with open('userList.txt','r') as userList:
+    admin_username = "admin"
+    admin_password = "admin123"
+    
+    if username == admin_username and password == admin_password:
+        print("Admin login successful.")
+        return admin_module.admin_options()
+    
+    with open('userList.txt', 'r') as userList:
         readingLines = userList.readlines()
 
         if not readingLines:
@@ -64,8 +68,7 @@ def userLogin():
         else:
             for line in readingLines:
                 if username in line and password in line:
-                    return postLogin_module.userOption(username) #removed postLogin_module.user_choice(choice=1)
+                    return postLogin_module.userOption(username)
                 
-            # If we reach this point, no matching username and password were found
             print("Invalid username or password or user does not exist. Please try again.\n")
             return userLogin()

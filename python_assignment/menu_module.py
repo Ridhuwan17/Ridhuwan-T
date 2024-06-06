@@ -1,7 +1,7 @@
 def menu_boba():
     print("Welcome to Booba T!")
     print("Take a look at our menu and order by typing the desired alphabet!")
-    # Define the menu items
+    
     menu_items = {
         "Milk Teas": [
             "(A) Original Pearl Milk Tea \t \t \t \t \t \t RM7.00",
@@ -24,19 +24,15 @@ def menu_boba():
         ]
     }
 
-    # Define the maximum length of a menu item name
     max_name_length = max(len(item) for items in menu_items.values() for item in items)
 
-    # Print the table header
     print("~" * (max_name_length + 12))
     print(f"{'Beverage':^{max_name_length + 2}}")
     print("~" * (max_name_length + 12))
 
-    # Print each menu category and its items
     for category, items in menu_items.items():
         print(f"\n{category}:")
         for item in items:
             print(f"- {item:<{max_name_length}}")
 
-    # Print the table footer
     print("~" * (max_name_length + 12))

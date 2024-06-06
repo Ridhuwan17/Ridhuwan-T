@@ -6,26 +6,21 @@ def change_user_detail(username, new_username):
     with open('userList.txt', 'r') as file:
         lines = file.readlines()
 
-    # Convert each line to a dictionary
     users = [ast.literal_eval(line.strip()) for line in lines]
     
-    # Check if new_username already exists
     if any(user['username'] == new_username for user in users):
         print(f"Username {new_username} already exists.")
         return 
-    # Find the user to update and update their password
+
     for user in users:
         if user['username'] == username:
             user['username'] = new_username
             break
 
-    # Write the updated data back to the file
     with open('userList.txt', 'w') as file:
         for user in users:
             file.write(str(user) + '\n')
 
-
-# Example usage
 print("""
 1. update name
 2. update password
@@ -33,16 +28,16 @@ print("""
 4. update email
 """)
 
-choice=int(input("Enter your choice: "))
+choice = int(input("Enter your choice: "))
 
 if choice == 1:
-    new_name=input("Enter your new name: ")
+    new_name = input("Enter your new name: ")
     change_user_detail("pzy", new_name)
 elif choice == 2:
-    password=input("Enter your newpassword: ")
+    password = input("Enter your newpassword: ")
 elif choice == 3:
-    age=int(input("Enter your new age: "))
+    age = int(input("Enter your new age: "))
 elif choice == 4:
-    email=input("Enter your new email: ")
+    email = input("Enter your new email: ")
 else:
-    print("Invalid choice")
+    print("Invalid choice.")

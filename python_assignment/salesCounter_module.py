@@ -1,10 +1,12 @@
 import os
+from datetime import datetime
 
 sales_file = "daily_sales.txt"
 
 def update_sales(amount):
     with open(sales_file, "a") as file:
-        file.write(f"{amount}\n")
+        date_today = datetime.now().strftime("%d/%m/%Y")
+        file.write(f"{date_today} Total Sales: RM{amount}\n")
 
 def view_sales():
     if not os.path.exists(sales_file):
@@ -14,7 +16,7 @@ def view_sales():
     with open(sales_file, "r") as file:
         sales = file.readlines()
     
-    total_sales = sum(float(sale.strip()) for sale in sales)
+    total_sales = sum(float(sale.split('RM')[-1]) for sale in sales)
     print(f"Total sales for the day: RM{total_sales:.2f}")
 
 def reset_sales():
@@ -29,5 +31,6 @@ def reset_sales():
         print("Sales counter reset and previous sales stored.")
     else:
         print("No sales to reset.")
+
 
 
