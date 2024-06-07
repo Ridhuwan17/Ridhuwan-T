@@ -5,7 +5,7 @@ sales_file = "daily_sales.txt"
 
 def update_sales(amount):
     with open(sales_file, "a") as file:
-        date_today = datetime.now().strftime("%d/%m/%Y")
+        date_today = datetime.now().strftime("%d/%m/%Y %I:%M%p")
         file.write(f"{date_today} Total Sales: RM{amount}\n")
 
 def view_sales():
@@ -31,6 +31,7 @@ def reset_sales():
         print("Sales counter reset and previous sales stored.")
     else:
         print("No sales to reset.")
+
 
 
 
