@@ -1,6 +1,6 @@
 import postLogin_module
 import os
-import admin_module  # Import the admin module
+import adminSales
 
 def welcome():
     print("""
@@ -54,11 +54,12 @@ def userLogin():
 
     admin_username = "admin"
     admin_password = "admin123"
-    
+
     if username == admin_username and password == admin_password:
         print("Admin login successful.")
-        return admin_module.admin_options()
-    
+        adminSales.admin_options()
+        return
+
     with open('userList.txt', 'r') as userList:
         readingLines = userList.readlines()
 
@@ -69,6 +70,6 @@ def userLogin():
             for line in readingLines:
                 if username in line and password in line:
                     return postLogin_module.userOption(username)
-                
+
             print("Invalid username or password or user does not exist. Please try again.\n")
             return userLogin()

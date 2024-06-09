@@ -6,7 +6,7 @@ dictOfUser = {}
 while True:
     userMenu_module.welcome()
     choice = int(input("Enter your choice(e.g 1): "))
-    
+
     if choice == 1:
         userMenu_module.userLogin()
     elif choice == 2:

@@ -1,7 +1,5 @@
-import menu_module
-import calculate_price
-import salesCounter_module
-import admin_module  # Import the admin module
+import menuPrice
+import adminSales
 import ast
 
 user_orders = {}
@@ -21,15 +19,18 @@ def userOption(username):
 def user_choice(username, choice):
     global totalPricetoPay
     if choice == 1:
-        menu_module.menu_boba()
-        order = calculate_price.calculate_price(money)
+        menuPrice.menu_boba()
+        order = menuPrice.calculate_price(money)
         user_orders[username] = order
-        salesCounter_module.update_sales(order['total_price'])
+
+        adminSales.update_sales(order['total_price'])
         return userOption(username)
     elif choice == 2:
         print(f"Your order: {user_orders.get(username, 'No orders found')}")
+        return userOption(username)
     elif choice == 3:
         update_user_info(username)
+        return userOption(username)
     elif choice == 4:
         print("Thank you for coming to the DaBubble Tea Shop")
         exit()
@@ -67,7 +68,7 @@ def change_user_detail(username, detail, new_value):
 
     if detail == 'username' and any(user['username'] == new_value for user in users):
         print(f"Username {new_value} already exists.")
-        return 
+        return
 
     for user in users:
         if user['username'] == username:
@@ -77,4 +78,3 @@ def change_user_detail(username, detail, new_value):
     with open('userList.txt', 'w') as file:
         for user in users:
             file.write(str(user) + '\n')
-
