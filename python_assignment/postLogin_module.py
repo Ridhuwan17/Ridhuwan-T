@@ -46,20 +46,27 @@ def update_user_info(username):
     if choice == 1:
         new_name = input("Enter your new name: ")
         change_user_detail(username, 'username', new_name)
+        return userOption(new_name)
+    
     elif choice == 2:
         new_password = input("Enter your new password: ")
         change_user_detail(username, 'password', new_password)
+        return userOption(username)
+    
     elif choice == 3:
         new_age = int(input("Enter your new age: "))
         change_user_detail(username, 'age', new_age)
+        return userOption(username)
+    
     elif choice == 4:
         new_email = input("Enter your new email: ")
         change_user_detail(username, 'email', new_email)
+        return userOption(username)
+    
     else:
         print("Invalid choice")
 
 def change_user_detail(username, detail, new_value):
-    user_data = []
 
     with open('userList.txt', 'r') as file:
         lines = file.readlines()
@@ -68,7 +75,7 @@ def change_user_detail(username, detail, new_value):
 
     if detail == 'username' and any(user['username'] == new_value for user in users):
         print(f"Username {new_value} already exists.")
-        return
+        return update_user_info(username)
 
     for user in users:
         if user['username'] == username:
@@ -78,3 +85,6 @@ def change_user_detail(username, detail, new_value):
     with open('userList.txt', 'w') as file:
         for user in users:
             file.write(str(user) + '\n')
+    
+    print(f"\n{detail} updated successfully.\n")
+    print('Returning to the DaBubble Tea Page')
