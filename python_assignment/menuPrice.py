@@ -114,13 +114,18 @@ def calculate_price(total_price):
     promo.printPromo()
     user_code = input("Enter promo code ('no' to skip): ").upper()
     new_price = promo.applyPromo(user_code,total_price)
-    amountPaid = float(input('Enter the amount paid: '))
+    while True:
+        amountPaid = float(input('Enter the amount paid: '))
+        if amountPaid < new_price:
+            print("Insufficient amount paid. Please try again.")
+        else:
+            break
     balance = amountPaid - new_price
     print_receipt(order_details,price,total_price,new_price,user_code,amountPaid,balance,quantity)
 
     return {
         "order_details": order_details, 
-        "total_price": total_price
+        "total_price": new_price
     }
 
 def print_receipt(order_details,price,total_price,new_price,user_code,amountPaid,balance,quantity):
