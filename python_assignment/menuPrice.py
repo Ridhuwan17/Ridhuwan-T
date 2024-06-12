@@ -1,9 +1,13 @@
 import promo
+import os
+from datetime import datetime
 
 order_details = []
+order_deets = {}
 price = []
-total_price = 0
-new_price = 0
+order_quantity = []
+
+date_today = datetime.now().strftime("%d/%m/%Y \t\t\t\t\t\t\t\t\t  %I:%M%p")
 
 def menu_boba():
     print("Welcome to Booba T!")
@@ -44,80 +48,63 @@ def menu_boba():
 
     print("~" * (max_name_length + 12))
 
+def orderDetails(name,drink_price,order_details,order_deets,price,order_quantity,total_price):
+    print(name)
+    quantity = int(input('Enter quantity: '))
+    order_deets = {"drink": name,"price": drink_price*quantity ,"quantity": quantity}
+    order_details.append(order_deets)
+    price.append(quantity*drink_price)
+    order_quantity.append(quantity)
+    total_price += quantity*drink_price
+
+    return order_details,order_deets,price,order_quantity,total_price,quantity
 
 def calculate_price(total_price):
-
-
+    global order_details,order_deets,price,order_quantity
     while True:
         order = input("Enter your order and type 'done' to finish.(e.g: M to order Mocha): ").upper()
         if order == 'DONE':
             break
 
         if order == 'A':
-            print("Original Pearl Milk Tea")
-            order_details.append("Original Pearl Milk Tea")
-            price.append(7)
-            total_price += 7
+            name,drink_price,quantity= "Original Pearl Milk Tea",7,0
+            order_details,order_deets,price,order_quantity,total_price,quantity = orderDetails(name,drink_price,order_details,order_deets,price,order_quantity,total_price)
         elif order == "B":
-            print('Signature Brown Sugar Pearl Milk Tea')
-            order_details.append("Signature Brown Sugar Pearl Milk Tea")
-            price.append(7)
-            total_price += 7
+            name,drink_price,quantity= "Signature Brown Sugar Pearl Milk Tea",7,0
+            order_details,order_deets,price,order_quantity,total_price,quantity = orderDetails(name,drink_price,order_details,order_deets,price,order_quantity,total_price)
         elif order == "C":
-            print('Classic Roasted Milk Tea with Grass Jelly')
-            order_details.append("Classic Roasted Milk Tea with Grass Jelly")
-            price.append(7)
-            total_price += 7
+            name,drink_price,quantity= "Classic Roasted Milk Tea with Grass Jelly",7,0
+            order_details,order_deets,price,order_quantity,total_price,quantity = orderDetails(name,drink_price,order_details,order_deets,price,order_quantity,total_price)
         elif order == "D":
-            print('Signature Milk Tea')
-            order_details.append("Signature Milk Tea")
-            price.append(6)
-            total_price += 6
+            name,drink_price,quantity= "Signature Milk Tea",6,0
+            order_details,order_deets,price,order_quantity,total_price,quantity = orderDetails(name,drink_price,order_details,order_deets,price,order_quantity,total_price)
         elif order == "E":
-            print('Passionfruit Green Tea')
-            order_details.append("Passionfruit Green Tea")
-            price.append(8)
-            total_price += 8
+            name,drink_price,quantity= "Passionfruit Green Tea",8,0
+            order_details,order_deets,price,order_quantity,total_price,quantity= orderDetails(name,drink_price,order_details,order_deets,price,order_quantity,total_price)
         elif order == "F":
-            print('Peach Oolong Tea')
-            order_details.append("Peach Oolong Tea")
-            price.append(9)
-            total_price += 8
+            name,drink_price,quantity= "Peach Oolong Tea",8,0
+            order_details,order_deets,price,order_quantity,total_price,quantity = orderDetails(name,drink_price,order_details,order_deets,price,order_quantity,total_price)
         elif order == "G":
-            print('Lychee Black Tea')
-            order_details.append("Lychee Black Tea")
-            price.append(9)
-            total_price += 8
+            name,drink_price,quantity= "Lychee Black Tea",8,0
+            order_details,order_deets,price,order_quantity,total_price,quantity = orderDetails(name,drink_price,order_details,order_deets,price,order_quantity,total_price)
         elif order == "H":
-            print('Grapefruit Green Tea')
-            order_details.append("Grapefruit Green Tea")
-            price.append(8.5)
-            total_price += 8.5
+            name,drink_price,quantity= "Grapefruit Green Tea",8.5,0
+            order_details,order_deets,price,order_quantity,total_price,quantity = orderDetails(name,drink_price,order_details,order_deets,price,order_quantity,total_price)
         elif order == "I":
-            print('Signature Coffee')
-            order_details.append("Signature Coffee")
-            price.append(9)
-            total_price += 9
+            name,drink_price,quantity= "Signature Coffee",9,0
+            order_details,order_deets,price,order_quantity,total_price,quantity = orderDetails(name,drink_price,order_details,order_deets,price,order_quantity,total_price)
         elif order == "J":
-            print('Hazelnut Latte')
-            order_details.append("Hazelnut Latte")
-            price.append(10.2)
-            total_price += 10.2
+            name,drink_price,quantity= "Hazelnut Latte",10.2,0
+            order_details,order_deets,price,order_quantity,total_price,quantity = orderDetails(name,drink_price,order_details,order_deets,price,order_quantity,total_price)
         elif order == "K":
-            print('Americano')
-            order_details.append("Americano")
-            price.append(10)
-            total_price += 10
+            name,drink_price,quantity= "Americano",10,0
+            order_details,order_deets,price,order_quantity,total_price,quantity = orderDetails(name,drink_price,order_details,order_deets,price,order_quantity,total_price)
         elif order == "L":
-            print('Cappuccino')
-            order_details.append("Cappuccino")
-            price.append(10)
-            total_price += 10
+            name,drink_price,quantity= "Cappucino",10,0
+            order_details,order_deets,price,order_quantity,total_price,quantity = orderDetails(name,drink_price,order_details,order_deets,price,order_quantity,total_price)  
         elif order == "M":
-            print('Mocha')
-            order_details.append("Mocha")
-            price.append(11)
-            total_price += 11
+            name,drink_price,quantity= "Mocha",11,0
+            order_details,order_deets,price,order_quantity,total_price,quantity = orderDetails(name,drink_price,order_details,order_deets,price,order_quantity,total_price)
         else:
             print("Invalid order. Please choose from the menu.")
             continue
@@ -127,22 +114,42 @@ def calculate_price(total_price):
     promo.printPromo()
     user_code = input("Enter promo code ('no' to skip): ").upper()
     new_price = promo.applyPromo(user_code,total_price)
-    print_receipt(order_details,price,total_price,new_price,user_code)
+    amountPaid = float(input('Enter the amount paid: '))
+    balance = amountPaid - new_price
+    print_receipt(order_details,price,total_price,new_price,user_code,amountPaid,balance,quantity)
 
     return {
-        'order_details': order_details,
-        'total_price': new_price
+        "order_details": order_details, 
+        "total_price": total_price
     }
 
-def print_receipt(order_details,price,total_price,new_price,user_code):
+def print_receipt(order_details,price,total_price,new_price,user_code,amountPaid,balance,quantity):
 
-    print("-" *50)
-    print("\t\t\t\t DaBubble Tea Shop ")
-    print("-" *50)
-    for item, price in zip(order_details,price):
-        print(f"{item} \t\t\t\t RM{price:.2f}")
-    print("-" * 50)
-    print(f"Total: \t\t\t\t\t\t\t\t\t RM{total_price:.2f}")
+
+    print("-" *65)
+    print(f"{'DaBubble Tea Shop':>40}")
+    print("-" *65)
+    print(f"{'INVOICE':>35}")
+    print(f"Date: {date_today}")
+    print("-" * 65)
+    print(f"{'Order':<45} {'Qty':^7}{'Price(RM)':^8}")
+    print("-" *65)
+    for order in order_details:
+        item = order['drink']
+        quantity = order['quantity']
+        price = order['price']
+        price2 = f'{price:.2f}'
+        print(f"{item:<45} {quantity:^7}{price2:^8}")
+    print("-" * 65)
+    print(f"{'Sub Total':<54}{total_price:.2f}")
     promo.promoReceipt(user_code,total_price)
-    print("-" *50)
-    print(f"Total: \t\t\t\t\t\t\t\t\t RM{new_price:.2f}")
+    print(f"{'Grand Total':<54}{new_price:.2f}")
+    print(f"{'Cash':<53} {amountPaid:.2f}")
+    print(f"{'Change':<54} {balance:.2f}")
+
+
+
+
+
+
+

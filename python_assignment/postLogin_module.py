@@ -26,7 +26,19 @@ def user_choice(username, choice):
         adminSales.update_sales(order['total_price'])
         return userOption(username)
     elif choice == 2:
-        print(f"Your order: {user_orders.get(username, 'No orders found')}")
+        order = user_orders.get(username, 'No orders found')
+        if order == 'No orders found':
+            print(order)
+        else:
+            print("Your order: {")
+            for detail in order['order_details']:
+                print("    orders: [{")
+                print(f"        drink: {detail['drink']},")
+                print(f"        price: {detail['price']},")
+                print(f"        quantity: {detail['quantity']}")
+                print("    }]")
+            print("},",end="")
+            print(f"Total price: {order['total_price']}")
         return userOption(username)
     elif choice == 3:
         update_user_info(username)
@@ -88,3 +100,4 @@ def change_user_detail(username, detail, new_value):
     
     print(f"\n{detail} updated successfully.\n")
     print('Returning to the DaBubble Tea Page')
+
