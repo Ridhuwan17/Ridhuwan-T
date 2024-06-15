@@ -1,5 +1,5 @@
 import promo
-import postLogin_module
+import adminSales
 import os
 from datetime import datetime
 
@@ -139,11 +139,12 @@ def paymentSection(order_details,total_price):
                 receipt.write(f"{item:<45} {quantity:^7}{price2:^8}\n")
             receipt.write("-" * 65 + "\n")
             receipt.write(f"{'Sub Total':<54}{total_price:.2f}\n")
-            receipt.write(promo.promoReceipt(user_code,total_price))
+            promo.physical_promoReceipt(receipt,user_code,total_price)
             receipt.write(f"{'Grand Total':<54}{new_price:.2f}\n")
             receipt.write(f"{'Cash':<53} {amountPaid:.2f}\n")
             receipt.write(f"{'Change':<54} {balance:.2f}")
         print("\nReceipt has been printed.")
+    adminSales.update_sales(new_price)
     print('Thank you for your order!')
     print('Returning to the user page...')
 
@@ -211,6 +212,8 @@ def calculate_price(total_price):
         "order_details": order_details, 
         "total_price": total_price
     }
+
+
 
 
 

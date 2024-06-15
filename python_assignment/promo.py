@@ -25,7 +25,7 @@ def applyPromo(total_price):
         print('Proceed to payment')
         print("Order confirmed! Thank you for your order.")
         print("Please pay at the counter.")
-        return total_price
+        return total_price,user_code
     #checks if promo code is valid
     if user_code in promo:
         discount = promo[user_code]
@@ -50,6 +50,13 @@ def promoReceipt(user_code,total):
     minus = total*(percentage/100)
     print(f"{user_code}({percentage}% OFF)\t\t\t\t\t\t\t\t\t\t  -{minus:.2f}")
 
+def physical_promoReceipt(receipt,user_code,total):
+    if user_code == 'NO':
+        receipt.write(f"{'No Promo':<54}{'-0.00'}\n")
+        return
+    percentage = promo[user_code]
+    minus = total*(percentage/100)
+    receipt.write(f"{user_code}({percentage}% OFF)\t\t\t\t\t\t\t\t\t\t  -{minus:.2f}")
 #function to add new promo code, if the admin wishes to do so
 def addPromo():
     newPromo = input("Enter new promo code: ").upper()
@@ -58,3 +65,4 @@ def addPromo():
         promo.update({newPromo:off})
     else:
         print("Promo Code exists")
+

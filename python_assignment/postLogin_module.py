@@ -1,5 +1,4 @@
 import menuPrice
-import adminSales
 import ast
 
 #to store all the users' order
@@ -30,8 +29,7 @@ def user_choice(username, choice):
         order = menuPrice.calculate_price(money)
         #making sure that the order belongs to the current user
         user_orders[username] = order
-        #update the daily sales of DaBubble Tea Shop (networth of the shop)
-        adminSales.update_sales(order['total_price'])
+       
         #returns back to the users' page after ordering
         return userOption(username)
     #view orders
@@ -155,4 +153,6 @@ def change_user_detail(username, detail, new_value):
     
     print(f"\n{detail} updated successfully.\n")
     print('Returning to the DaBubble Tea Page')
+
+
 
