@@ -771,7 +771,7 @@ app.patch("/buying_chest", verifyToken, async (req, res) => {
       .send("name,email and chest are required. ( ･ิ⌣･ิ)📦(‘∀’●)♡");
   }
   // Check if the user is authorized (player or name matches)
-  if(req.identify.roles == "player" || req.identify.name == req.body.name){
+  if(req.identify.roles == "player" || req.identify.name == req.body.name) {
     // Retrieve player data from the database
     let player = await client
       .db("Assignment")
@@ -836,13 +836,13 @@ app.patch("/buying_chest", verifyToken, async (req, res) => {
           .collection("characters_of_players")
           .findOneAndUpdate(
             {
-              char_id: index,
+              char_id: player.collection.charId[index],
             },
             {
               $inc: {
-                "characters.$[].health": 100,
-                "characters.$[].attack": 100,
-                "characters.$[].speed": 0.1,
+                "characters.health": 100,
+                "characters.attack": 100,
+                "characters.speed": 0.1,
               },
             }
           );
@@ -858,7 +858,7 @@ app.patch("/buying_chest", verifyToken, async (req, res) => {
           .collection("players")
           .updateOne(
             {
-              player_id: player.player_id,
+              name: req.body.name,  
             },
             {
               $addToSet: {
@@ -901,15 +901,38 @@ app.patch("/buying_chest", verifyToken, async (req, res) => {
               },
             ])
             .toArray();
+            // Insert the new character into the player's collection
+            await client
+            .db("Assignment")
+            .collection("players")
+            .updateOne(
+              {
+                name: req.body.name,
+              },
+              {
+                $addToSet: {
+                  "collection.characterList":
+                    character_in_chest[0].characters[0].name,
+                },
+                $inc: {
+                  money: -chest.price,
+                },
+                $set: {
+                  upset: true,
+                },
+              }
+            );
+            // Assign a new character ID and insert into the characters_of_players collection
           await client
             .db("Assignment")
             .collection("characters_of_players")
             .insertOne({ char_id: countNum, characters: randomChar[0] });
+          // Update the player's character ID list
           await client
             .db("Assignment")
             .collection("players")
             .updateOne(
-              { player_id: player.player_id },
+              { name: req.body.name },
               {
                 $push: {
                   "collection.charId": countNum,
@@ -932,6 +955,7 @@ app.patch("/buying_chest", verifyToken, async (req, res) => {
                 }
               );
           }
+          // Return a success message
           return res.send(
             "Chest bought successfully🦍, you got " +
               character_in_chest[0].characters[0].name +
@@ -940,9 +964,11 @@ app.patch("/buying_chest", verifyToken, async (req, res) => {
         }
       }
     } else {
+      // Return an error message if the chest is not found
       res.send("Chest not found(T⌓T)");
     }
   }else{
+    // Return an error message if the user is not authorized
     return res.status(401).send("You are not authorised to buy a chest");
   }
 });
